@@ -21,3 +21,9 @@ export function formatDate(date: string): string {
     year: "numeric",
   });
 }
+
+export function addDays(base: string, n: number): string {
+  const d = new Date(`${base}T00:00:00`);
+  d.setDate(d.getDate() + n);
+  return d.toLocaleDateString("sv-SE");
+}

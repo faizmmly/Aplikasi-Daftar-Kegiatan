@@ -1,0 +1,48 @@
+:root {
+  --bg: #f1f5f9; --panel: #ffffff; --text: #1e293b; --muted: #64748b;
+  --line: #e2e8f0; --primary: #4f46e5; --radius: 12px;
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  color: var(--text); background: var(--bg);
+}
+* { box-sizing: border-box; margin: 0; }
+body { min-height: 100vh; padding: 24px 16px; }
+.container { max-width: 960px; margin: 0 auto; }
+.app-header { margin-bottom: 20px; }
+.app-header h1 { font-size: 1.8rem; color: var(--primary); }
+.muted { color: var(--muted); font-size: .9rem; }
+
+.list { list-style: none; padding: 0; display: grid; gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-left: 5px solid #94a3b8;
+  border-radius: var(--radius); padding: 16px; display: grid; gap: 10px; }
+.card.is-late { border-left-color: #dc2626; }
+.card.is-done { border-left-color: #22c55e; opacity: .8; }
+.card.is-done h3 { text-decoration: line-through; }
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.card-head h3 { font-size: 1.05rem; }
+.card-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .88rem; color: var(--muted); }
+.card-detail { background: var(--bg); border-radius: 8px; padding: 10px 12px; font-size: .9rem; display: grid; gap: 4px; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.due { font-weight: 600; color: #b45309; }
+.due-late { color: #dc2626; }
+
+.badge { display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
+.badge-neutral { background: #e2e8f0; color: #334155; }
+.badge-info { background: #e0e7ff; color: #3730a3; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-success { background: #d1fae5; color: #065f46; }
+.badge-danger { background: #fee2e2; color: #b91c1c; }
+
+.btn { font: inherit; font-size: .88rem; font-weight: 600; min-height: 40px; padding: 0 14px;
+  border: 0; border-radius: 8px; cursor: pointer; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-ghost { background: #e2e8f0; color: #334155; }
+.btn-danger { background: #fee2e2; color: #b91c1c; }
+.btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+.empty { text-align: center; padding: 2rem 1rem; color: var(--muted); background: var(--panel);
+  border: 1px dashed var(--line); border-radius: var(--radius); }
+.empty span { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+
+@media (max-width: 600px) {
+  .card-actions .btn { flex: 1; }
+}
