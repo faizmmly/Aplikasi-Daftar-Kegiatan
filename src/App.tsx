@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
-import type { Activity, ActivityInput, KindFilter, OverviewFilter, SortBy, Status } from "./types";
+import type {
+  Activity, ActivityInput, KindFilter, OverviewFilter, Page, SortBy, Status,
+} from "./types";
 import { STATUSES } from "./types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
-import { addDays, todayStr } from "./utils/date";
+import { addDays, formatDate, todayStr } from "./utils/date";
 import { comparators, countBy, matchesOverview, matchesQuery, sortItems } from "./utils/filter";
 import Header from "./components/Header";
 import OverviewCards from "./components/OverviewCard";
@@ -12,6 +14,8 @@ import ActivityForm from "./components/ActivityForm";
 import ConfirmModal from "./components/ConfirmModal";
 import Modal from "./components/Modal";
 import Toast from "./components/Toast";
+import Calendar from "./components/Calendar";
+import BottomNav from "./components/BottomNav";
 
 const sample = (): Activity[] => {
   const t = todayStr();
@@ -44,13 +48,17 @@ interface ToastState {
 function App() {
   const [activities, setActivities] = useLocalStorage<Activity[]>("agendaku-v2", sample());
 
-  // State tampilan
+  // Navigasi
+  const [page, setPage] = useState<Page>("beranda");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  // Filter di halaman beranda
   const [overview, setOverview] = useState<OverviewFilter>("semua");
   const [kind, setKind] = useState<KindFilter>("Semua");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortBy>("tanggal");
 
-  // State form, konfirmasi, dan notifikasi
+  // Form, konfirmasi, notifikasi
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Activity | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Activity | null>(null);
@@ -108,7 +116,7 @@ function App() {
     setQuery("");
   };
 
-  // Nilai turunan: dihitung dari state, tidak disimpan terpisah
+  // Nilai turunan
   const counts: Record<OverviewFilter, number> = {
     "hari-ini": countBy(activities, (a) => matchesOverview(a, "hari-ini")),
     mendatang: countBy(activities, (a) => matchesOverview(a, "mendatang")),
@@ -125,41 +133,75 @@ function App() {
   const visible = sortItems(filtered, comparators[sort]);
   const hasActive = overview !== "semua" || kind !== "Semua" || query.trim() !== "";
 
+  const dayActivities = selectedDate
+    ? sortItems(
+        activities.filter((a) => a.date === selectedDate),
+        comparators.tanggal,
+      )
+    : [];
+
   return (
     <div className="container">
       <Header name="Faiz Muhammad Ilham" nim="1247050032" kelas="IF A 24" />
-      <OverviewCards counts={counts} active={overview} onSelect={setOverview} />
 
-      <FilterBar
-        query={query}
-        onQueryChange={setQuery}
-        kind={kind}
-        onKindChange={setKind}
-        sort={sort}
-        onSortChange={setSort}
-        hasActive={hasActive}
-        onReset={resetFilters}
-      />
-
-      <h2 className="section-title">
-        {TITLES[overview]} <span className="muted">({visible.length})</span>
-      </h2>
-      <ActivityList
-        activities={visible}
-        onNextStatus={handleNextStatus}
-        onEdit={openEdit}
-        onDelete={requestDelete}
-      />
+      {page === "beranda" ? (
+        <>
+          <OverviewCards counts={counts} active={overview} onSelect={setOverview} />
+          <FilterBar
+            query={query}
+            onQueryChange={setQuery}
+            kind={kind}
+            onKindChange={setKind}
+            sort={sort}
+            onSortChange={setSort}
+            hasActive={hasActive}
+            onReset={resetFilters}
+          />
+          <h2 className="section-title">
+            {TITLES[overview]} <span className="muted">({visible.length})</span>
+          </h2>
+          <ActivityList
+            activities={visible}
+            onNextStatus={handleNextStatus}
+            onEdit={openEdit}
+            onDelete={requestDelete}
+          />
+        </>
+      ) : (
+        <>
+          <Calendar activities={activities} selected={selectedDate} onSelect={setSelectedDate} />
+          <h2 className="section-title">
+            {selectedDate ? `Kegiatan ${formatDate(selectedDate)}` : "Pilih tanggal"}
+            {selectedDate && <span className="muted"> ({dayActivities.length})</span>}
+          </h2>
+          {selectedDate ? (
+            <ActivityList
+              activities={dayActivities}
+              onNextStatus={handleNextStatus}
+              onEdit={openEdit}
+              onDelete={requestDelete}
+            />
+          ) : (
+            <div className="empty">
+              <span>🗓️</span>
+              <p>Pilih tanggal di kalender untuk melihat kegiatannya.</p>
+            </div>
+          )}
+        </>
+      )}
 
       <button type="button" className="fab" aria-label="Tambah kegiatan" onClick={openAdd}>
         +
       </button>
+
+      <BottomNav page={page} onChange={setPage} />
 
       {formOpen && (
         <Modal title={editing ? "Edit kegiatan" : "Kegiatan baru"} onClose={closeForm}>
           <ActivityForm
             key={editing?.id ?? "new"}
             initial={editing}
+            defaultDate={page === "kalender" ? (selectedDate ?? undefined) : undefined}
             onSubmit={handleSubmit}
             onCancel={closeForm}
           />

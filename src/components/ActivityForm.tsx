@@ -5,7 +5,8 @@ import { todayStr } from "../utils/date";
 import Button from "./Button";
 
 interface ActivityFormProps {
-  initial: Activity | null; // null = tambah baru, berisi data = edit
+  initial: Activity | null;
+  defaultDate?: string;
   onSubmit: (input: ActivityInput) => void;
   onCancel: () => void;
 }
@@ -23,12 +24,12 @@ interface FormState {
 
 type Errors = Partial<Record<keyof FormState, string>>;
 
-function toState(a: Activity | null): FormState {
+function toState(a: Activity | null, defaultDate?: string): FormState {
   return {
     title: a?.title ?? "",
     kind: a?.kind ?? "Tugas",
     priority: a?.priority ?? "Sedang",
-    date: a?.date ?? todayStr(),
+    date: a?.date ?? defaultDate ?? todayStr(),
     startTime: a?.startTime ?? "",
     endTime: a?.endTime ?? "",
     location: a?.location ?? "",
@@ -46,8 +47,8 @@ function validate(f: FormState): Errors {
   return errors;
 }
 
-function ActivityForm({ initial, onSubmit, onCancel }: ActivityFormProps) {
-  const [form, setForm] = useState<FormState>(() => toState(initial));
+function ActivityForm({ initial, defaultDate, onSubmit, onCancel }: ActivityFormProps) {
+  const [form, setForm] = useState<FormState>(() => toState(initial, defaultDate));
   const [errors, setErrors] = useState<Errors>({});
 
   // Generic: mengubah satu field tanpa menyentuh yang lain
