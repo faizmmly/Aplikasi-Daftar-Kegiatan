@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Activity, OverviewFilter, Status } from "./types";
+import type { Activity, ActivityInput, OverviewFilter, Status } from "./types";
 import { STATUSES } from "./types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { addDays, todayStr } from "./utils/date";
@@ -7,6 +7,8 @@ import { countBy, matchesOverview } from "./utils/filter";
 import Header from "./components/Header";
 import OverviewCards from "./components/OverviewCard";
 import ActivityList from "./components/ActivityList";
+import ActivityForm from "./components/ActivityForm";
+import Modal from "./components/Modal";
 
 const sample = (): Activity[] => {
   const t = todayStr();
@@ -33,6 +35,30 @@ function nextStatus(s: Status): Status {
 function App() {
   const [activities, setActivities] = useLocalStorage<Activity[]>("agendaku-v2", sample());
   const [filter, setFilter] = useState<OverviewFilter>("semua");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Activity | null>(null);
+
+  const openAdd = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
+  const openEdit = (a: Activity) => {
+    setEditing(a);
+    setFormOpen(true);
+  };
+  const closeForm = () => {
+    setFormOpen(false);
+    setEditing(null);
+  };
+
+  const handleSubmit = (input: ActivityInput) => {
+    if (editing) {
+      setActivities(activities.map((a) => (a.id === editing.id ? { ...a, ...input } : a)));
+    } else {
+      setActivities([{ id: Date.now(), status: "Direncanakan", ...input }, ...activities]);
+    }
+    closeForm();
+  };
 
   const handleNextStatus = (id: number) =>
     setActivities(activities.map((a) => (a.id === id ? { ...a, status: nextStatus(a.status) } : a)));
@@ -49,7 +75,7 @@ function App() {
 
   const visible = activities.filter((a) => matchesOverview(a, filter));
 
-  return (
+    return (
     <div className="container">
       <Header name="Faiz Muhammad Ilham" nim="1247050032" kelas="IF A 24" />
       <OverviewCards counts={counts} active={filter} onSelect={setFilter} />
@@ -59,8 +85,24 @@ function App() {
       <ActivityList
         activities={visible}
         onNextStatus={handleNextStatus}
+        onEdit={openEdit}
         onDelete={handleDelete}
       />
+
+      <button type="button" className="fab" aria-label="Tambah kegiatan" onClick={openAdd}>
+        +
+      </button>
+
+      {formOpen && (
+        <Modal title={editing ? "Edit kegiatan" : "Kegiatan baru"} onClose={closeForm}>
+          <ActivityForm
+            key={editing?.id ?? "new"}
+            initial={editing}
+            onSubmit={handleSubmit}
+            onCancel={closeForm}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

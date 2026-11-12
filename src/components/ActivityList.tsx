@@ -4,15 +4,16 @@ import ActivityCard from "./ActivityCard";
 interface ActivityListProps {
   activities: Activity[];
   onNextStatus: (id: number) => void;
+  onEdit: (activity: Activity) => void;
   onDelete: (id: number) => void;
 }
 
-function ActivityList({ activities, onNextStatus, onDelete }: ActivityListProps) {
+function ActivityList({ activities, onNextStatus, onEdit, onDelete }: ActivityListProps) {
   if (activities.length === 0) {
     return (
       <div className="empty">
         <span>📝</span>
-        <p>Belum ada kegiatan. Tambahkan kegiatan pertamamu!</p>
+        <p>Tidak ada kegiatan di sini. Tekan tombol + untuk menambah.</p>
       </div>
     );
   }
@@ -24,6 +25,7 @@ function ActivityList({ activities, onNextStatus, onDelete }: ActivityListProps)
           key={a.id}
           activity={a}
           onNextStatus={onNextStatus}
+          onEdit={onEdit}
           onDelete={onDelete}
         />
       ))}

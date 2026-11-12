@@ -8,6 +8,7 @@ import Button from "./Button";
 interface ActivityCardProps {
   activity: Activity;
   onNextStatus: (id: number) => void;
+  onEdit: (activity: Activity) => void;
   onDelete: (id: number) => void;
 }
 
@@ -17,7 +18,7 @@ const statusTone: Record<Status, "info" | "warning" | "success"> = {
   Selesai: "success",
 };
 
-function ActivityCard({ activity, onNextStatus, onDelete }: ActivityCardProps) {
+function ActivityCard({ activity, onNextStatus, onEdit, onDelete }: ActivityCardProps) {
   const [open, setOpen] = useState(false);
   const days = daysLeft(activity.date);
   const done = activity.status === "Selesai";
@@ -55,7 +56,7 @@ function ActivityCard({ activity, onNextStatus, onDelete }: ActivityCardProps) {
         <Button variant="primary" onClick={() => onNextStatus(activity.id)}>
           Ubah status
         </Button>
-        <Button onClick={() => setOpen(!open)}>{open ? "Tutup" : "Detail"}</Button>
+        <Button onClick={() => onEdit(activity)}>Edit</Button>
         <Button variant="danger" onClick={() => onDelete(activity.id)}>
           Hapus
         </Button>
