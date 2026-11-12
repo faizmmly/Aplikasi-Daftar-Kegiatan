@@ -21,5 +21,6 @@ export interface Activity {
 }
 
 export type ActivityInput = Omit<Activity, "id" | "status">;
-
 export type OverviewFilter = "semua" | "hari-ini" | "mendatang" | "selesai";
+export type KindFilter = "Semua" | Kind; // union type gabungan
+export type SortBy = "tanggal" | "prioritas" | "nama";
