@@ -27,3 +27,8 @@ export function addDays(base: string, n: number): string {
   d.setDate(d.getDate() + n);
   return d.toLocaleDateString("sv-SE");
 }
+
+export function timeRange(start?: string, end?: string): string {
+  if (start && end) return `${start} - ${end}`;
+  return start ?? end ?? "";
+}

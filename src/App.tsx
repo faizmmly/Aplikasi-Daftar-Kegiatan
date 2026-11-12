@@ -7,10 +7,11 @@ import ActivityList from "./components/ActivityList";
 const sample = (): Activity[] => {
   const t = todayStr();
   return [
-    { id: 1, title: "Kuliah Pengembangan Aplikasi Web", category: "Kuliah", priority: "Sedang", status: "Berlangsung", date: t, time: "08:00", location: "Gedung FST", note: "Bawa laptop." },
-    { id: 2, title: "Rapat himpunan", category: "Organisasi", priority: "Tinggi", status: "Direncanakan", date: addDays(t, 1), time: "16:00", location: "Sekretariat" },
-    { id: 3, title: "Kumpulkan tugas React", category: "Tugas", priority: "Tinggi", status: "Direncanakan", date: addDays(t, 18), note: "Deadline 30 November." },
-    { id: 4, title: "Lari pagi", category: "Pribadi", priority: "Rendah", status: "Selesai", date: addDays(t, -1) },
+    { id: 1, title: "Kuliah Pengembangan Aplikasi Web", kind: "Acara", priority: "Sedang", status: "Berlangsung", date: t, startTime: "08:00", endTime: "10:00", location: "Gedung FST", note: "Bawa laptop." },
+    { id: 2, title: "Rapat himpunan", kind: "Acara", priority: "Tinggi", status: "Direncanakan", date: addDays(t, 1), startTime: "16:00", endTime: "17:30", location: "Sekretariat" },
+    { id: 3, title: "Kumpulkan tugas React", kind: "Tugas", priority: "Tinggi", status: "Direncanakan", date: addDays(t, 18), note: "Deadline 30 November." },
+    { id: 4, title: "Ingatkan bayar UKT", kind: "Pengingat", priority: "Sedang", status: "Direncanakan", date: addDays(t, 3), startTime: "09:00" },
+    { id: 5, title: "Selesaikan prototipe UI", kind: "Target", priority: "Rendah", status: "Selesai", date: addDays(t, -1) },
   ];
 };
 
@@ -19,7 +20,7 @@ function nextStatus(s: Status): Status {
 }
 
 function App() {
-  const [activities, setActivities] = useLocalStorage<Activity[]>("agendaku", sample());
+  const [activities, setActivities] = useLocalStorage<Activity[]>("agendaku-v2", sample());
 
   const handleNextStatus = (id: number) =>
     setActivities(activities.map((a) => (a.id === id ? { ...a, status: nextStatus(a.status) } : a)));

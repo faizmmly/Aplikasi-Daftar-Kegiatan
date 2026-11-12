@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Activity, Status } from "../types";
-import { dateLabel, daysLeft, formatDate } from "../utils/date";
+import { dateLabel, daysLeft, formatDate, timeRange } from "../utils/date";
+import { KIND_ICON } from "../utils/kind";
 import Badge from "./Badge";
 import Button from "./Button";
 
@@ -17,33 +18,34 @@ const statusTone: Record<Status, "info" | "warning" | "success"> = {
 };
 
 function ActivityCard({ activity, onNextStatus, onDelete }: ActivityCardProps) {
-  const [open, setOpen] = useState(false); // state lokal: detail tampil atau tidak
+  const [open, setOpen] = useState(false);
   const days = daysLeft(activity.date);
   const done = activity.status === "Selesai";
   const late = !done && days < 0;
+  const time = timeRange(activity.startTime, activity.endTime);
 
   return (
     <li className={`card ${done ? "is-done" : ""} ${late ? "is-late" : ""}`}>
       <div className="card-head">
-        <h3>{activity.title}</h3>
+        <h3>
+          <span aria-hidden="true">{KIND_ICON[activity.kind]}</span> {activity.title}
+        </h3>
         <Badge label={activity.status} tone={statusTone[activity.status]} />
       </div>
 
       <div className="card-meta">
-        <Badge label={activity.category} />
+        <Badge label={activity.kind} />
         <Badge
           label={activity.priority}
           tone={activity.priority === "Tinggi" ? "danger" : "neutral"}
         />
         <span>📅 {formatDate(activity.date)}</span>
-        {!done && (
-          <span className={late ? "due due-late" : "due"}>{dateLabel(days)}</span>
-        )}
+        {time && <span>🕒 {time}</span>}
+        {!done && <span className={late ? "due due-late" : "due"}>{dateLabel(days)}</span>}
       </div>
 
       {open && (
         <div className="card-detail">
-          {activity.time && <p>🕒 {activity.time}</p>}
           {activity.location && <p>📍 {activity.location}</p>}
           <p>{activity.note || "Tidak ada catatan."}</p>
         </div>
