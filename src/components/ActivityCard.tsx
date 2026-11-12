@@ -52,15 +52,16 @@ function ActivityCard({ activity, onNextStatus, onEdit, onDelete }: ActivityCard
         </div>
       )}
 
-      <div className="card-actions">
-        <Button variant="primary" onClick={() => onNextStatus(activity.id)}>
-          Ubah status
-        </Button>
-        <Button onClick={() => onEdit(activity)}>Edit</Button>
-        <Button variant="danger" onClick={() => onDelete(activity.id)}>
-          Hapus
-        </Button>
-      </div>
+        <div className="card-actions">
+            <Button variant="primary" onClick={() => onNextStatus(activity.id)}>
+                Ubah status
+            </Button>
+            <Button onClick={() => setOpen(!open)}>{open ? "Tutup" : "Detail"}</Button>
+            <Button onClick={() => onEdit(activity)}>Edit</Button>
+            <Button variant="danger" onClick={() => onDelete(activity.id)}>
+                Hapus
+            </Button>
+        </div>
     </li>
   );
 }
