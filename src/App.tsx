@@ -1,7 +1,11 @@
-import type { Activity, Status } from "./types";
+import { useState } from "react";
+import type { Activity, OverviewFilter, Status } from "./types";
 import { STATUSES } from "./types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { addDays, todayStr } from "./utils/date";
+import { countBy, matchesOverview } from "./utils/filter";
+import Header from "./components/Header";
+import OverviewCards from "./components/OverviewCard";
 import ActivityList from "./components/ActivityList";
 
 const sample = (): Activity[] => {
@@ -15,12 +19,20 @@ const sample = (): Activity[] => {
   ];
 };
 
+const TITLES: Record<OverviewFilter, string> = {
+  "hari-ini": "Kegiatan hari ini",
+  mendatang: "Kegiatan mendatang",
+  selesai: "Kegiatan selesai",
+  semua: "Semua kegiatan",
+};
+
 function nextStatus(s: Status): Status {
   return STATUSES[(STATUSES.indexOf(s) + 1) % STATUSES.length];
 }
 
 function App() {
   const [activities, setActivities] = useLocalStorage<Activity[]>("agendaku-v2", sample());
+  const [filter, setFilter] = useState<OverviewFilter>("semua");
 
   const handleNextStatus = (id: number) =>
     setActivities(activities.map((a) => (a.id === id ? { ...a, status: nextStatus(a.status) } : a)));
@@ -28,16 +40,24 @@ function App() {
   const handleDelete = (id: number) =>
     setActivities(activities.filter((a) => a.id !== id));
 
+  const counts: Record<OverviewFilter, number> = {
+    "hari-ini": countBy(activities, (a) => matchesOverview(a, "hari-ini")),
+    mendatang: countBy(activities, (a) => matchesOverview(a, "mendatang")),
+    selesai: countBy(activities, (a) => matchesOverview(a, "selesai")),
+    semua: activities.length,
+  };
+
+  const visible = activities.filter((a) => matchesOverview(a, filter));
+
   return (
     <div className="container">
-      <header className="app-header">
-        <div>
-          <h1>AgendaKu</h1>
-          <p className="muted">Faiz Muhammad Ilham • 1247050032 • IF A 24</p>
-        </div>
-      </header>
+      <Header name="Faiz Muhammad Ilham" nim="1247050032" kelas="IF A 24" />
+      <OverviewCards counts={counts} active={filter} onSelect={setFilter} />
+      <h2 className="section-title">
+        {TITLES[filter]} <span className="muted">({visible.length})</span>
+      </h2>
       <ActivityList
-        activities={activities}
+        activities={visible}
         onNextStatus={handleNextStatus}
         onDelete={handleDelete}
       />

@@ -21,3 +21,5 @@ export interface Activity {
 }
 
 export type ActivityInput = Omit<Activity, "id" | "status">;
+
+export type OverviewFilter = "semua" | "hari-ini" | "mendatang" | "selesai";
