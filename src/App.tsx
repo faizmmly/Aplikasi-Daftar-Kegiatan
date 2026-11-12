@@ -13,7 +13,7 @@ import BottomNav from "./components/BottomNav";
 import HomePage from "./pages/HomePage";
 import CalendarPage from "./pages/CalenderPage";
 
-const PROFILE = { name: "Faiz Muhammad Ilham Hariry", nim: "1247050032", kelas: "IF A 24" };
+const PROFILE = { name: "Faiz Muhammad Ilham Hariry", nim: "1247050032", kelas: "IF A 24", mataKuliah: "Pengembangan Aplikasi Web" };
 
 const sample = (): Activity[] => {
   const t = todayStr();
