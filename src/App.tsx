@@ -1,21 +1,19 @@
-import { useCallback, useState } from "react";
-import type {
-  Activity, ActivityInput, KindFilter, OverviewFilter, Page, SortBy, Status,
-} from "./types";
+import { useCallback, useEffect, useState } from "react";
+import type { Activity, ActivityInput, Page, Status, Theme } from "./types";
 import { STATUSES } from "./types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
-import { addDays, formatDate, todayStr } from "./utils/date";
-import { comparators, countBy, matchesOverview, matchesQuery, sortItems } from "./utils/filter";
+import { useToast } from "./hooks/useToast";
+import { addDays, todayStr } from "./utils/date";
 import Header from "./components/Header";
-import OverviewCards from "./components/OverviewCard";
-import FilterBar from "./components/FilterBar";
-import ActivityList from "./components/ActivityList";
 import ActivityForm from "./components/ActivityForm";
 import ConfirmModal from "./components/ConfirmModal";
 import Modal from "./components/Modal";
 import Toast from "./components/Toast";
-import Calendar from "./components/Calendar";
 import BottomNav from "./components/BottomNav";
+import HomePage from "./pages/HomePage";
+import CalendarPage from "./pages/CalenderPage";
+
+const PROFILE = { name: "Faiz Muhammad Ilham Hariry", nim: "1247050032", kelas: "IF A 24" };
 
 const sample = (): Activity[] => {
   const t = todayStr();
@@ -28,50 +26,29 @@ const sample = (): Activity[] => {
   ];
 };
 
-const TITLES: Record<OverviewFilter, string> = {
-  "hari-ini": "Kegiatan hari ini",
-  mendatang: "Kegiatan mendatang",
-  selesai: "Kegiatan selesai",
-  semua: "Semua kegiatan",
-};
-
 function nextStatus(s: Status): Status {
   return STATUSES[(STATUSES.indexOf(s) + 1) % STATUSES.length];
 }
 
-interface ToastState {
-  id: number;
-  message: string;
-  tone: "success" | "danger";
-}
-
 function App() {
   const [activities, setActivities] = useLocalStorage<Activity[]>("agendaku-v2", sample());
+  const [theme, setTheme] = useLocalStorage<Theme>("agendaku-theme", "light");
+  const { toast, notify, close } = useToast();
 
-  // Navigasi
   const [page, setPage] = useState<Page>("beranda");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
-  // Filter di halaman beranda
-  const [overview, setOverview] = useState<OverviewFilter>("semua");
-  const [kind, setKind] = useState<KindFilter>("Semua");
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortBy>("tanggal");
-
-  // Form, konfirmasi, notifikasi
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Activity | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Activity | null>(null);
-  const [toast, setToast] = useState<ToastState | null>(null);
 
-  const notify = (message: string, tone: "success" | "danger" = "success") =>
-    setToast({ id: Date.now(), message, tone });
-  const closeToast = useCallback(() => setToast(null), []);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
-  const openAdd = () => {
+  const openAdd = useCallback(() => {
     setEditing(null);
     setFormOpen(true);
-  };
+  }, []);
   const openEdit = (a: Activity) => {
     setEditing(a);
     setFormOpen(true);
@@ -80,6 +57,31 @@ function App() {
     setFormOpen(false);
     setEditing(null);
   };
+
+  const changePage = (p: Page) => {
+    setPage(p);
+    window.scrollTo({ top: 0 });
+  };
+
+  // Pintasan keyboard: "/" untuk mencari, "n" untuk kegiatan baru
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (el.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (formOpen || pendingDelete) return;
+
+      if (e.key === "/") {
+        e.preventDefault();
+        setPage("beranda");
+        requestAnimationFrame(() => document.getElementById("search")?.focus());
+      } else if (e.key === "n") {
+        e.preventDefault();
+        openAdd();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [formOpen, pendingDelete, openAdd]);
 
   const handleSubmit = (input: ActivityInput) => {
     if (editing) {
@@ -110,117 +112,77 @@ function App() {
     notify("Kegiatan dihapus", "danger");
   };
 
-  const resetFilters = () => {
-    setOverview("semua");
-    setKind("Semua");
-    setQuery("");
-  };
-
-  // Nilai turunan
-  const counts: Record<OverviewFilter, number> = {
-    "hari-ini": countBy(activities, (a) => matchesOverview(a, "hari-ini")),
-    mendatang: countBy(activities, (a) => matchesOverview(a, "mendatang")),
-    selesai: countBy(activities, (a) => matchesOverview(a, "selesai")),
-    semua: activities.length,
-  };
-
-  const filtered = activities.filter(
-    (a) =>
-      matchesOverview(a, overview) &&
-      (kind === "Semua" || a.kind === kind) &&
-      matchesQuery(a, query),
-  );
-  const visible = sortItems(filtered, comparators[sort]);
-  const hasActive = overview !== "semua" || kind !== "Semua" || query.trim() !== "";
-
-  const dayActivities = selectedDate
-    ? sortItems(
-        activities.filter((a) => a.date === selectedDate),
-        comparators.tanggal,
-      )
-    : [];
-
   return (
-    <div className="container">
-      <Header name="Faiz Muhammad Ilham" nim="1247050032" kelas="IF A 24" />
+    <>
+      <a className="skip-link" href="#main">Lewati ke konten</a>
 
-      {page === "beranda" ? (
-        <>
-          <OverviewCards counts={counts} active={overview} onSelect={setOverview} />
-          <FilterBar
-            query={query}
-            onQueryChange={setQuery}
-            kind={kind}
-            onKindChange={setKind}
-            sort={sort}
-            onSortChange={setSort}
-            hasActive={hasActive}
-            onReset={resetFilters}
-          />
-          <h2 className="section-title">
-            {TITLES[overview]} <span className="muted">({visible.length})</span>
-          </h2>
-          <ActivityList
-            activities={visible}
-            onNextStatus={handleNextStatus}
-            onEdit={openEdit}
-            onDelete={requestDelete}
-          />
-        </>
-      ) : (
-        <>
-          <Calendar activities={activities} selected={selectedDate} onSelect={setSelectedDate} />
-          <h2 className="section-title">
-            {selectedDate ? `Kegiatan ${formatDate(selectedDate)}` : "Pilih tanggal"}
-            {selectedDate && <span className="muted"> ({dayActivities.length})</span>}
-          </h2>
-          {selectedDate ? (
-            <ActivityList
-              activities={dayActivities}
+      <div className="container">
+        <Header
+          name={PROFILE.name}
+          nim={PROFILE.nim}
+          kelas={PROFILE.kelas}
+          theme={theme}
+          onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
+        />
+
+        {/* Kedua halaman tetap terpasang, jadi filter dan bulan kalender tidak hilang saat berpindah */}
+        <main id="main">
+          <div hidden={page !== "beranda"}>
+            <HomePage
+              activities={activities}
               onNextStatus={handleNextStatus}
               onEdit={openEdit}
               onDelete={requestDelete}
             />
-          ) : (
-            <div className="empty">
-              <span>🗓️</span>
-              <p>Pilih tanggal di kalender untuk melihat kegiatannya.</p>
-            </div>
-          )}
-        </>
-      )}
+          </div>
+          <div hidden={page !== "kalender"}>
+            <CalendarPage
+              activities={activities}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              onNextStatus={handleNextStatus}
+              onEdit={openEdit}
+              onDelete={requestDelete}
+            />
+          </div>
+        </main>
 
-      <button type="button" className="fab" aria-label="Tambah kegiatan" onClick={openAdd}>
-        +
-      </button>
+        <button
+          type="button"
+          className="fab"
+          aria-label="Tambah kegiatan"
+          title="Tambah kegiatan (N)"
+          onClick={openAdd}
+        >
+          +
+        </button>
 
-      <BottomNav page={page} onChange={setPage} />
+        <BottomNav page={page} onChange={changePage} />
 
-      {formOpen && (
-        <Modal title={editing ? "Edit kegiatan" : "Kegiatan baru"} onClose={closeForm}>
-          <ActivityForm
-            key={editing?.id ?? "new"}
-            initial={editing}
-            defaultDate={page === "kalender" ? (selectedDate ?? undefined) : undefined}
-            onSubmit={handleSubmit}
-            onCancel={closeForm}
+        {formOpen && (
+          <Modal title={editing ? "Edit kegiatan" : "Kegiatan baru"} onClose={closeForm}>
+            <ActivityForm
+              key={editing?.id ?? "new"}
+              initial={editing}
+              defaultDate={page === "kalender" ? (selectedDate ?? undefined) : undefined}
+              onSubmit={handleSubmit}
+              onCancel={closeForm}
+            />
+          </Modal>
+        )}
+
+        {pendingDelete && (
+          <ConfirmModal
+            title="Hapus kegiatan?"
+            message={`"${pendingDelete.title}" akan dihapus dan tidak bisa dikembalikan.`}
+            onConfirm={confirmDelete}
+            onCancel={() => setPendingDelete(null)}
           />
-        </Modal>
-      )}
+        )}
 
-      {pendingDelete && (
-        <ConfirmModal
-          title="Hapus kegiatan?"
-          message={`"${pendingDelete.title}" akan dihapus dan tidak bisa dikembalikan.`}
-          onConfirm={confirmDelete}
-          onCancel={() => setPendingDelete(null)}
-        />
-      )}
-
-      {toast && (
-        <Toast key={toast.id} message={toast.message} tone={toast.tone} onClose={closeToast} />
-      )}
-    </div>
+        {toast && <Toast key={toast.id} message={toast.message} tone={toast.tone} onClose={close} />}
+      </div>
+    </>
   );
 }
 

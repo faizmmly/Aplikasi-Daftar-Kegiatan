@@ -8,7 +8,6 @@ interface ModalProps {
 }
 
 function Modal({ title, onClose, children }: ModalProps) {
-  // Tutup dengan tombol Esc
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -16,6 +15,16 @@ function Modal({ title, onClose, children }: ModalProps) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+      previous?.focus();
+    };
+  }, []);
 
   return (
     <div className="overlay" onClick={onClose}>

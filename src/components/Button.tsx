@@ -5,11 +5,12 @@ interface ButtonProps {
   onClick?: () => void;
   variant?: "primary" | "ghost" | "danger";
   type?: "button" | "submit";
+  autoFocus?: boolean;
 }
 
-function Button({ children, onClick, variant = "ghost", type = "button" }: ButtonProps) {
+function Button({ children, onClick, variant = "ghost", type = "button", autoFocus }: ButtonProps) {
   return (
-    <button type={type} className={`btn btn-${variant}`} onClick={onClick}>
+    <button type={type} className={`btn btn-${variant}`} onClick={onClick} autoFocus={autoFocus}>
       {children}
     </button>
   );

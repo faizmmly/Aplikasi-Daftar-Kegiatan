@@ -14,7 +14,7 @@ function ConfirmModal({ title, message, confirmLabel = "Hapus", onConfirm, onCan
     <Modal title={title} onClose={onCancel}>
       <p className="confirm-text">{message}</p>
       <div className="form-actions">
-        <Button onClick={onCancel}>Batal</Button>
+        <Button autoFocus onClick={onCancel}>Batal</Button>
         <Button variant="danger" onClick={onConfirm}>{confirmLabel}</Button>
       </div>
     </Modal>

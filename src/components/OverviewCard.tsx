@@ -1,5 +1,5 @@
 import type { OverviewFilter } from "../types";
-import StatCard from "./statCard";
+import StatCard from "./StatCard";
 
 interface OverviewCardsProps {
   counts: Record<OverviewFilter, number>;

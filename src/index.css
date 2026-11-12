@@ -170,3 +170,95 @@ body { min-height: 100vh; padding: 24px 16px; }
   .bottom-nav button { padding: 0 14px; }
   .cal-cell { width: 36px; height: 36px; }
 }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+/* Layout lebar */
+@media (min-width: 1024px) {
+  .container { max-width: 1120px; }
+  .list { grid-template-columns: repeat(2, 1fr); align-items: start; }
+  .split { display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
+  .split .calendar { margin-bottom: 0; }
+  .split .list { grid-template-columns: 1fr; }
+}
+
+/* Dark mode */
+:root[data-theme="dark"] {
+  --bg: #0b1220; --panel: #111b2e; --text: #e6edf7; --muted: #93a4bf;
+  --line: #22314d; --primary: #818cf8;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .field input,
+:root[data-theme="dark"] .field select,
+:root[data-theme="dark"] .field textarea,
+:root[data-theme="dark"] .search,
+:root[data-theme="dark"] .filter-row select { background: #0b1220; color: var(--text); border-color: #334155; }
+:root[data-theme="dark"] .field label,
+:root[data-theme="dark"] .filter-row label { color: #a5b4fc; }
+:root[data-theme="dark"] .btn-ghost,
+:root[data-theme="dark"] .icon-btn { background: #1e293b; color: var(--text); }
+:root[data-theme="dark"] .btn-primary { background: #6366f1; }
+:root[data-theme="dark"] .btn-danger,
+:root[data-theme="dark"] .reset { background: #3b1219; color: #fca5a5; }
+:root[data-theme="dark"] .badge-neutral { background: #1e293b; color: #cbd5e1; }
+:root[data-theme="dark"] .badge-info { background: #1e1b4b; color: #c7d2fe; }
+:root[data-theme="dark"] .badge-warning { background: #422006; color: #fde68a; }
+:root[data-theme="dark"] .badge-success { background: #052e1c; color: #86efac; }
+:root[data-theme="dark"] .badge-danger { background: #3b1219; color: #fca5a5; }
+:root[data-theme="dark"] .stat span { color: #334155; }
+:root[data-theme="dark"] .stat.is-active { border-color: #e6edf7; }
+:root[data-theme="dark"] .card-detail { background: #0b1220; }
+:root[data-theme="dark"] .cal-cell:hover { background: #1e293b; }
+:root[data-theme="dark"] .cal-cell.is-selected { background: #e6edf7; color: #0b1220; }
+:root[data-theme="dark"] .cal-today { background: #1e1b4b; color: #c7d2fe; }
+:root[data-theme="dark"] .fab { background: #6366f1; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* Lompat ke konten (keyboard dan screen reader) */
+.skip-link { position: absolute; left: -999px; top: 8px; background: var(--primary); color: #fff;
+  padding: 8px 14px; border-radius: 8px; z-index: 300; }
+.skip-link:focus { left: 8px; }
+#main:focus { outline: none; }
+
+/* Header menyesuaikan layar sempit */
+.app-header { flex-wrap: wrap; }
+@media (max-width: 480px) {
+  .app-header h1 { font-size: 1.05rem; }
+  .brand { display: none; }
+  .avatar { width: 44px; height: 44px; }
+}
+
+/* Area aman perangkat berponi (iPhone) */
+.bottom-nav { bottom: calc(16px + env(safe-area-inset-bottom)); }
+.fab { bottom: calc(96px + env(safe-area-inset-bottom)); }
+.toast { bottom: calc(92px + env(safe-area-inset-bottom)); }
+.container { padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+
+/* Sel kalender fleksibel, tidak meluber di layar 320px */
+.cal-cell { width: 100%; max-width: 44px; height: auto; aspect-ratio: 1; min-height: 0; }
+
+/* Layar sentuh: target minimal 44px */
+@media (pointer: coarse) {
+  .btn, .reset, .cal-today { min-height: 44px; }
+  .icon-btn { width: 44px; height: 44px; }
+}
+
+/* Kartu di HP: tombol utama selebar kartu */
+@media (max-width: 480px) {
+  .card-actions .btn-primary { flex: 1 1 100%; }
+  .card-head { flex-direction: column; gap: 6px; }
+}
+
+/* Form menjadi bottom sheet di HP */
+@media (max-width: 600px) {
+  .overlay { align-items: end; padding: 0; }
+  .modal { max-width: none; max-height: 92vh; border-radius: 16px 16px 0 0;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+}
+
+/* Layar sangat lebar */
+@media (min-width: 1400px) {
+  .container { max-width: 1240px; }
+}

@@ -24,6 +24,7 @@ function FilterBar({
   return (
     <section className="filterbar" aria-label="Cari dan filter">
       <input
+        id="search"
         type="search"
         className="search"
         placeholder="🔍 Cari judul, lokasi, atau catatan..."
