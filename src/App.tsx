@@ -13,16 +13,65 @@ import BottomNav from "./components/BottomNav";
 import HomePage from "./pages/HomePage";
 import CalendarPage from "./pages/CalenderPage";
 
-const PROFILE = { name: "Faiz Muhammad Ilham Hariry", nim: "1247050032", kelas: "IF A 24", mataKuliah: "Pengembangan Aplikasi Web" };
+const PROFILE = {
+  name: "Faiz Muhammad Ilham Hariry",
+  nim: "1247050032",
+  kelas: "IF A 24",
+  mataKuliah: "Pengembangan Aplikasi Web",
+};
 
 const sample = (): Activity[] => {
   const t = todayStr();
   return [
-    { id: 1, title: "Kuliah Pengembangan Aplikasi Web", kind: "Acara", priority: "Sedang", status: "Berlangsung", date: t, startTime: "08:00", endTime: "10:00", location: "Gedung FST", note: "Bawa laptop." },
-    { id: 2, title: "Rapat himpunan", kind: "Acara", priority: "Tinggi", status: "Direncanakan", date: addDays(t, 1), startTime: "16:00", endTime: "17:30", location: "Sekretariat" },
-    { id: 3, title: "Kumpulkan tugas React", kind: "Tugas", priority: "Tinggi", status: "Direncanakan", date: addDays(t, 18), note: "Deadline 30 November." },
-    { id: 4, title: "Ingatkan bayar UKT", kind: "Pengingat", priority: "Sedang", status: "Direncanakan", date: addDays(t, 3), startTime: "09:00" },
-    { id: 5, title: "Selesaikan prototipe UI", kind: "Target", priority: "Rendah", status: "Selesai", date: addDays(t, -1) },
+    {
+      id: 1,
+      title: "Kuliah Pengembangan Aplikasi Web",
+      kind: "Acara",
+      priority: "Sedang",
+      status: "Berlangsung",
+      date: t,
+      startTime: "08:00",
+      endTime: "10:00",
+      location: "Gedung FST",
+      note: "Bawa laptop.",
+    },
+    {
+      id: 2,
+      title: "Rapat himpunan",
+      kind: "Acara",
+      priority: "Tinggi",
+      status: "Direncanakan",
+      date: addDays(t, 1),
+      startTime: "16:00",
+      endTime: "17:30",
+      location: "Sekretariat",
+    },
+    {
+      id: 3,
+      title: "Kumpulkan tugas React",
+      kind: "Tugas",
+      priority: "Tinggi",
+      status: "Direncanakan",
+      date: addDays(t, 18),
+      note: "Deadline 30 November.",
+    },
+    {
+      id: 4,
+      title: "Ingatkan bayar UKT",
+      kind: "Pengingat",
+      priority: "Sedang",
+      status: "Direncanakan",
+      date: addDays(t, 3),
+      startTime: "09:00",
+    },
+    {
+      id: 5,
+      title: "Selesaikan prototipe UI",
+      kind: "Target",
+      priority: "Rendah",
+      status: "Selesai",
+      date: addDays(t, -1),
+    },
   ];
 };
 
@@ -35,11 +84,30 @@ function App() {
   const [theme, setTheme] = useLocalStorage<Theme>("agendaku-theme", "light");
   const { toast, notify, close } = useToast();
 
-  const [page, setPage] = useState<Page>("beranda");
+  // Baca query parameter dari URL (?view=kalender, ?action=tambah, ?action=cari, ?theme=dark)
+  const initialParams = new URLSearchParams(window.location.search);
+
+  const [page, setPage] = useState<Page>(() =>
+    initialParams.get("view") === "kalender" ? "kalender" : "beranda"
+  );
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState<boolean>(() =>
+    initialParams.get("action") === "tambah"
+  );
   const [editing, setEditing] = useState<Activity | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Activity | null>(null);
+
+  // Terapkan query parameter ?theme= dan ?action=cari saat aplikasi pertama kali dibuka
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const themeParam = params.get("theme");
+    if (themeParam === "dark" || themeParam === "light") {
+      setTheme(themeParam);
+    }
+    if (params.get("action") === "cari") {
+      requestAnimationFrame(() => document.getElementById("search")?.focus());
+    }
+  }, [setTheme]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -49,10 +117,12 @@ function App() {
     setEditing(null);
     setFormOpen(true);
   }, []);
+
   const openEdit = (a: Activity) => {
     setEditing(a);
     setFormOpen(true);
   };
+
   const closeForm = () => {
     setFormOpen(false);
     setEditing(null);
@@ -114,7 +184,9 @@ function App() {
 
   return (
     <>
-      <a className="skip-link" href="#main">Lewati ke konten</a>
+      <a className="skip-link" href="#main">
+        Lewati ke konten
+      </a>
 
       <div className="container">
         <Header
